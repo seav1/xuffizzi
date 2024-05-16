@@ -24,7 +24,6 @@ jobs:
         with:
           # An anonymous, emphemeral registry built on ttl.sh
           images: jfu888/dockerjs
-          tags: type=raw,value=48h
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and Push Image to Uffizzi Ephemeral Registry
