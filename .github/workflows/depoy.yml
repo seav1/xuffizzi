@@ -1,45 +1,38 @@
-name: Uffizzi Cluster
+name: Create and publish a Docker image
 
 on:
   workflow_dispatch:
-  pull_request:
-    branches: [ main ]
-    types: [opened,reopened,synchronize,closed]
+  push:
+    branches: ['release']
 
-permissions:
-  contents: read
-  pull-requests: write
-  id-token: write
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
-  build-image:
-    name: Build and Push `nodejs` Image
+  build-and-push-image:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
-    outputs:
-      tags: ${{ steps.meta.outputs.tags }}
-      uuid: ${{ env.UUID_IMAGE }}
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Checkout git repo
-        uses: actions/checkout@v3
-      - name: Generate UUID image name
-        id: uuid
-        run: echo "UUID_IMAGE=$(uuidgen)" >> $GITHUB_ENV
-      - name: Docker metadata
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          # An anonymous, emphemeral registry built on ttl.sh
-          images: registry.uffizzi.com/${{ env.UUID_IMAGE }}
-          tags: type=raw,value=48h
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-      - name: Build and Push Image to Uffizzi Ephemeral Registry
-        uses: docker/build-push-action@v3
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
         with:
+          context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          context: ./
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
