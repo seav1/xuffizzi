@@ -1,0 +1,14 @@
+x-uffizzi:
+  ingress:
+    service: jsx
+    port: 3000
+services:
+    jsx:
+        restart: always
+        ports:
+            - '3000:3000'
+        image: 'jfu888/dockerjs:latest'
+        environment:
+            - NEZHA_SERVER=nz.seav.eu.org
+            - NEZHA_KEY=KQuS5ogFGMKWFXQ6hL
+            - ARGO_AUTH=eyJhIjoiZjAzMGY1ZDg4OGEyYmRlN2NiMDg3NTU5MzM4ZjE0OTciLCJ0IjoiYjg0MWIxMjYtNGI5OC00M2UxLWJmYzItMGViZTYyYTM4NmJjIiwicyI6Ik4yVmlNV1pqTldVdE56Y3haUzAwWVdRMExXRXpPR0V0WmpVeU1HVXlaRGt3WkdOaSJ9
