@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
     branches: [ main ]
-
+    types: [opened,reopened,synchronize,closed]
 
 permissions:
   contents: read
@@ -15,15 +15,23 @@ jobs:
   build-image:
     name: Build and Push `nodejs` Image
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'pull_request' && github.event.action != 'closed' }}
+    outputs:
+      tags: ${{ steps.meta.outputs.tags }}
+      uuid: ${{ env.UUID_IMAGE }}
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v3
+      - name: Generate UUID image name
+        id: uuid
+        run: echo "UUID_IMAGE=$(uuidgen)" >> $GITHUB_ENV
       - name: Docker metadata
         id: meta
         uses: docker/metadata-action@v4
         with:
           # An anonymous, emphemeral registry built on ttl.sh
-          images: jfu888/dockerjs
+          images: registry.uffizzi.com/${{ env.UUID_IMAGE }}
+          tags: type=raw,value=48h
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Build and Push Image to Uffizzi Ephemeral Registry
@@ -33,3 +41,5 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           context: ./
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
