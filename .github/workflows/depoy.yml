@@ -3,7 +3,8 @@ name: xuffizzi
 on:
   pull_request:
     types: [opened]
-
+    
+  workflow_dispatch:
 jobs:
   build-image:
     name: Build and Push image
