@@ -1,11 +1,27 @@
-uses: UffizziCloud/preview-action@v2
-with:
-  compose-file: 'compose.yaml'
-  server: 'https://app.uffizzi.com'
-secrets:
-  access-token: ${{ secrets.GITHUB_TOKEN }}
-  url-username: admin
-  url-password: ${{ secrets.URL_PASSWORD }}
+name: xuffizzi
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  build-image:
+    name: Build and Push image
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use UffizziCloud preview action
+        uses: UffizziCloud/preview-action@v2
+        with:
+          compose-file: 'compose.yaml'
+          server: 'https://app.uffizzi.com'
+        env:
+          ACCESS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          URL_USERNAME: admin
+          URL_PASSWORD: ${{ secrets.URL_PASSWORD }}
+
 permissions:
   contents: read
   pull-requests: write
